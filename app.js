@@ -1,9 +1,9 @@
 //console.log("Hello Erlein!");
+const puppeteer = require('puppeteer');
 
-const request = require('request-promise');
-const cheerio = require('cheerio');
 
 const URL =  'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20';
+
 
 //async functiopn executes automatically
 
@@ -19,30 +19,31 @@ const URL =  'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20';
 
 (async () => {
     try{
-        const response = await request(URL, {
-            headers : {
-                Accept: '*/*',
-                Host: 'www.amazon.com',
-                Origin: 'https://www.amazon.com',
-                Referer: 'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0',
-                'Accept-Language': 'en-US,en;q=0.9'
-            }
+        //launch a non-headless (it means it shows GUI), dV just maximizes it into the screen the userData saves the
+        //user's data somewhere
+        const browser = await puppeteer.launch({
+            headless: false,
+            defaultViewport: null,
+            userDataDir: "./tmp"
         });
-        //console.log(response);
-    
-        let $ = cheerio.load(response);
-    
-        let title = $('div[class="a-section a-spacing-none"] > h1').text();
-        /*
-            let text = $('body').text();
-            console.log(text);
-        */
-        //let title = $('div.a-section a-spacing-none h1.a-spacing-none a-text-normal span.a-size-extra-large celwidget').text().trim();
-        console.log(response);
+        
+        //create a new page 
+        const page = await browser.newPage();
+        //open that
+        await page.goto(URL)
+
+        const productTitles = await page.$$('.a-spacing-none .a-text-normal');
+        
+        for(const pTitle of productTitles){
+            //const singleTitle = await page.evaluate(el => el.querySelector('#productTitle').textContent, pTitle);
+            const singleTitle = await page.evaluate(el => el.textContent, pTitle);
+            console.log(singleTitle);
+        }
+
     } catch (error){
         console.log("error: ", error);
     }
 
 })()
 
+const ASIN = 'B01HNJIK70';
