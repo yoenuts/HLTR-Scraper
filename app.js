@@ -2,7 +2,8 @@
 const puppeteer = require('puppeteer');
 
 
-const URL =  'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20';
+//const URL =  'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20';
+const URL =  'https://www.amazon.com/dp/B0036Z9U2A?tag=hltr-20';
 
 
 //async functiopn executes automatically
@@ -35,8 +36,9 @@ const URL =  'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20';
         const productTitles = await page.$$('.a-spacing-none .a-text-normal');
         
         for(const pTitle of productTitles){
-            //const singleTitle = await page.evaluate(el => el.querySelector('#productTitle').textContent, pTitle);
-            const singleTitle = await page.evaluate(el => el.textContent, pTitle);
+            await pTitle.waitForSelector('#productTitle');
+
+            const singleTitle = await pTitle.$eval('#productTitle', el => el.textContent);
             console.log(singleTitle);
         }
 
