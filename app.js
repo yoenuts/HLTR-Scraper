@@ -5,7 +5,7 @@ const puppeteer = require('puppeteer');
 //query amazon link, gets number of pages, title, author, audiobook duration, kindle link, audiobook link, and paperback link.
 
 //const URL =  'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20';
-const URL =  'https://www.amazon.com/dp/B0036Z9U2A?tag=hltr-20';
+const URL =  'https://www.amazon.com/dp/B07HQQR6QW?tag=hltr-20';
 
 
 
@@ -37,6 +37,7 @@ async function queryBook(url){
 
         getTitle(page);
         getBookLength(page);
+        getAuthor(page);
 }
 
 //the dollar sign simply refers to document.querySelector() function
@@ -58,6 +59,14 @@ async function getBookLength(page) {
     return 'Book length of pages not found';
 }
 
+async function getAuthor(page) {
+    const authorNameElement = await(await page.$('.celwidget .a-section.a-spacing-micro.bylineHidden.feature span.author.notFaded a.a-link-normal'));
+    if(authorNameElement){
+        const authorName = await authorNameElement.evaluate(el => el.textContent);
+        return console.log(authorName.trim());
+    }
+    return 'Author not found';
+}
 
 queryBook(URL);
 
