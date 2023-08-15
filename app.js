@@ -2,11 +2,11 @@
 const puppeteer = require('puppeteer');
 
 
-//query amazon link, gets number of pages, title, author, audiobook duration, kindle link, audiobook link, and paperback link.
+//query amazon link, gets number of pages, title, author, audiobook duration, kindle link, and paperback link.
 
 //const URL =  'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20';
-const URL =  'https://www.amazon.com/dp/B07HQQR6QW?tag=hltr-20';
-
+//const URL =  'https://www.amazon.com/dp/B07HQQR6QW?tag=hltr-20';
+const URL = 'https://www.amazon.com/Irresistible-Addictive-Technology-Business-Keeping/dp/0735222843/ref=sr_1_1?crid=2I9T3JC8IMMAK&keywords=Irresistible%3A+The+Rise+of+Addictive+Technology+and+the+Business+of+Keeping+Us+Hooked&qid=1692095373&sprefix=irresistible+the+rise+of+addictive+technology+and+the+business+of+keeping+us+hooked%2Caps%2C1728&sr=8-1';
 
 
 //async functiopn executes automatically
@@ -32,26 +32,35 @@ async function queryBook(url){
         
         //create a new page 
         const page = await browser.newPage();
-        //open that
-        await page.goto(URL)
+        //open that and take the URL as argument
+        await page.goto(URL, { timeout: 0 });
 
         getTitle(page);
         getBookLength(page);
         getAuthor(page);
+
+        const kLink = await getKindleLink(page);
+        console.log(kLink);
+        if(kLink){
+            const audioLink = await browser.newPage();
+            await audioLink.goto(kLink, { timeout: 0 });
+            getAudiBookDuration(audioLink);
+        }
 }
 
 //the dollar sign simply refers to document.querySelector() function
 async function getTitle(page) {
-    const titleElement = await (await page.$('.a-section.a-spacing-none h1.a-spacing-none.a-text-normal span#productTitle'));
+    const titleElement = await page.$('.a-section.a-spacing-none h1.a-spacing-none.a-text-normal span#productTitle');
     if (titleElement) {
         const title = await titleElement.evaluate(el => el.textContent);
         return console.log(title.trim());
+        //return title.trim();
     }
     return 'Title not found';
 }
 
 async function getBookLength(page) {
-    const bookLengthElement = await(await page.$('.a-section.a-spacing-none.a-text-center.rpi-attribute-value span.a-declarative a.a-popover-trigger.a-declarative span'));
+    const bookLengthElement = await page.$('.a-section.a-spacing-none.a-text-center.rpi-attribute-value span.a-declarative a.a-popover-trigger.a-declarative span');
     if (bookLengthElement) {
         const bookLength = await bookLengthElement.evaluate(el => el.textContent);
         return console.log(bookLength.trim());
@@ -60,7 +69,7 @@ async function getBookLength(page) {
 }
 
 async function getAuthor(page) {
-    const authorNameElement = await(await page.$('.celwidget .a-section.a-spacing-micro.bylineHidden.feature span.author.notFaded a.a-link-normal'));
+    const authorNameElement = await page.$('.celwidget .a-section.a-spacing-micro.bylineHidden.feature span.author.notFaded a.a-link-normal');
     if(authorNameElement){
         const authorName = await authorNameElement.evaluate(el => el.textContent);
         return console.log(authorName.trim());
@@ -68,25 +77,39 @@ async function getAuthor(page) {
     return 'Author not found';
 }
 
-queryBook(URL);
-
-
-/*
-(async () => {
-    try{
-
-
-        const productTitles = await page.$$('.a-spacing-none .a-text-normal');
-        
-        for(const pTitle of productTitles){
-            //await pTitle.waitForSelector('#productTitle');
-            const singleTitle = await pTitle.$eval('#productTitle', el => el.textContent);
-            console.log(singleTitle);
-        }
-
-    } catch (error){
-        console.log("error: ", error);
+async function getAudioBookLink(page){
+    const audiobookElement = await page.$('#a-autoid-1-announce');
+    if (audiobookElement) {
+        const href = await page.evaluate(el => el.getAttribute('href'), audiobookElement);
+        const aLink = "https://www.amazon.com" + href;
+        console.log(aLink);
+        return aLink;
+    } 
+    else {
+        console.log("Audiobook element not found");
     }
 
-})()
-*/
+}
+
+async function getAudiBookDuration(link){
+    const aBDurElement = await link.$('.a-section.a-spacing-none.a-text-center.rpi-attribute-value span');
+    if(aBDurElement){
+        const audiobookDurElement = await aBDurElement.evaluate(el => el.textContent);
+        return console.log(audiobookDurElement.trim());
+    }
+    return 'audiobook duration not found';
+}
+
+async function getKindleLink(page){
+    const kindleElement = await page.$('.celwidget .a-section.a-spacing-micro.bylineHidden.feature span.author.notFaded a.a-link-normal');
+    if(kindleElement){
+        const getKindleLink = await authorNameElement.evaluate(el => el.textContent);
+        return console.log(authorName.trim());
+    }
+    return 'Author not found';
+
+}
+
+
+queryBook(URL);
+
