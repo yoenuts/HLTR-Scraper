@@ -39,13 +39,15 @@ async function queryBook(url){
         getBookLength(page);
         getAuthor(page);
 
-        const kLink = await getKindleLink(page);
-        console.log(kLink);
+        const kLink = await getAudioBookLink(page);
+        
         if(kLink){
             const audioLink = await browser.newPage();
             await audioLink.goto(kLink, { timeout: 0 });
             getAudiBookDuration(audioLink);
         }
+        getKindleLink(page);
+        getPaperbackLink(page);
 }
 
 //the dollar sign simply refers to document.querySelector() function
@@ -82,7 +84,7 @@ async function getAudioBookLink(page){
     if (audiobookElement) {
         const href = await page.evaluate(el => el.getAttribute('href'), audiobookElement);
         const aLink = "https://www.amazon.com" + href;
-        console.log(aLink);
+        console.log("Audiobook link:", aLink);
         return aLink;
     } 
     else {
@@ -101,13 +103,24 @@ async function getAudiBookDuration(link){
 }
 
 async function getKindleLink(page){
-    const kindleElement = await page.$('.celwidget .a-section.a-spacing-micro.bylineHidden.feature span.author.notFaded a.a-link-normal');
+    const kindleElement = await page.$('span.a-button-inner #a-autoid-0-announce');
     if(kindleElement){
-        const getKindleLink = await authorNameElement.evaluate(el => el.textContent);
-        return console.log(authorName.trim());
+        const href = await page.evaluate(el => el.getAttribute('href'), kindleElement);
+        const aLink = "https://www.amazon.com" + href;
+        console.log("Kindle link: ", aLink);
     }
-    return 'Author not found';
+    return 'Kindle link cannot be found';
 
+}
+
+async function getPaperbackLink(page){
+    const paperbackElement = await page.$('span.a-button-inner #a-autoid-3-announce');
+    if(paperbackElement){
+        const href = await page.evaluate(el => el.getAttribute('href', paperbackElement));
+        const aLink = "https://www.amazon.com" + href;
+        console.log("Paperback link: ", aLink);
+    }
+    return 'Paperback link cannot be found';
 }
 
 
