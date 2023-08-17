@@ -45,9 +45,9 @@ async function queryBook(url){
             const audioLink = await browser.newPage();
             await audioLink.goto(kLink, { timeout: 0 });
             getAudiBookDuration(audioLink);
-            getKindleLink(audioLink);
-            //getPaperbackLink(audioLink);
+            await getKindleLink(audioLink);
         }
+        getPaperbackLink(page);
 
 }
 
@@ -91,7 +91,6 @@ async function getAudioBookLink(page){
     } 
     return 'Audiobook element not found';
     
-
 }
 
 async function getAudiBookDuration(link){
@@ -115,13 +114,20 @@ async function getKindleLink(page){
 }
 
 async function getPaperbackLink(page){
-    const paperbackElement = await page.$('span.a-button-inner #a-autoid-7-announce');
-    if(paperbackElement){
-        const href = await page.evaluate(el => el.getAttribute('href', paperbackElement));
-        const aLink = "https://www.amazon.com" + href;
-        console.log("Paperback link: ", aLink);
+    try{
+        const paperbackElement = await page.$('span.a-list-item #a-autoid-5 span.a-button-inner #a-autoid-5-announce');
+        if(paperbackElement){
+            const href = await page.evaluate(el => el.getAttribute('href', paperbackElement));
+            console.log(href);
+            const aLink = "https://www.amazon.com" + href;
+            console.log("Paperback link: ", aLink);
+        }
+        else{
+            console.log("paperback not found");
+        }
+    } catch(error){
+        console.log("Error:", error);
     }
-    return 'Paperback link cannot be found';
 }
 
 
