@@ -1,12 +1,12 @@
-//console.log("Hello Erlein!");
+
 const puppeteer = require('puppeteer');
 
 
 //query amazon link, gets number of pages, title, author, audiobook duration, kindle link, and paperback link.
 
-//const URL =  'https://www.amazon.com/dp/B01HNJIK70?tag=hltr-20';
+const URL =  'https://www.amazon.com/dp/B0036Z9U2A?tag=hltr-20';
 //const URL =  'https://www.amazon.com/dp/B07HQQR6QW?tag=hltr-20';
-const URL = 'https://www.amazon.com/Irresistible-Addictive-Technology-Business-Keeping/dp/0735222843/ref=sr_1_1?crid=2I9T3JC8IMMAK&keywords=Irresistible%3A+The+Rise+of+Addictive+Technology+and+the+Business+of+Keeping+Us+Hooked&qid=1692095373&sprefix=irresistible+the+rise+of+addictive+technology+and+the+business+of+keeping+us+hooked%2Caps%2C1728&sr=8-1';
+//const URL = 'https://www.amazon.com/Irresistible-Addictive-Technology-Business-Keeping/dp/0735222843/ref=sr_1_1?crid=2I9T3JC8IMMAK&keywords=Irresistible%3A+The+Rise+of+Addictive+Technology+and+the+Business+of+Keeping+Us+Hooked&qid=1692095373&sprefix=irresistible+the+rise+of+addictive+technology+and+the+business+of+keeping+us+hooked%2Caps%2C1728&sr=8-1';
 
 
 //async functiopn executes automatically
@@ -45,9 +45,10 @@ async function queryBook(url){
             const audioLink = await browser.newPage();
             await audioLink.goto(kLink, { timeout: 0 });
             getAudiBookDuration(audioLink);
+            getKindleLink(audioLink);
+            //getPaperbackLink(audioLink);
         }
-        getKindleLink(page);
-        getPaperbackLink(page);
+
 }
 
 //the dollar sign simply refers to document.querySelector() function
@@ -79,17 +80,17 @@ async function getAuthor(page) {
     return 'Author not found';
 }
 
+
 async function getAudioBookLink(page){
-    const audiobookElement = await page.$('#a-autoid-1-announce');
+    const audiobookElement = await page.$('#a-autoid-3 span.a-button-inner #a-autoid-3-announce');
     if (audiobookElement) {
         const href = await page.evaluate(el => el.getAttribute('href'), audiobookElement);
         const aLink = "https://www.amazon.com" + href;
         console.log("Audiobook link:", aLink);
         return aLink;
     } 
-    else {
-        console.log("Audiobook element not found");
-    }
+    return 'Audiobook element not found';
+    
 
 }
 
@@ -103,7 +104,7 @@ async function getAudiBookDuration(link){
 }
 
 async function getKindleLink(page){
-    const kindleElement = await page.$('span.a-button-inner #a-autoid-0-announce');
+    const kindleElement = await page.$('span.a-button-inner #a-autoid-4-announce');
     if(kindleElement){
         const href = await page.evaluate(el => el.getAttribute('href'), kindleElement);
         const aLink = "https://www.amazon.com" + href;
@@ -114,7 +115,7 @@ async function getKindleLink(page){
 }
 
 async function getPaperbackLink(page){
-    const paperbackElement = await page.$('span.a-button-inner #a-autoid-3-announce');
+    const paperbackElement = await page.$('span.a-button-inner #a-autoid-7-announce');
     if(paperbackElement){
         const href = await page.evaluate(el => el.getAttribute('href', paperbackElement));
         const aLink = "https://www.amazon.com" + href;
@@ -124,5 +125,5 @@ async function getPaperbackLink(page){
 }
 
 
-queryBook(URL);
+queryBook(URL);                              
 
