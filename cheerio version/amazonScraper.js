@@ -29,9 +29,13 @@ async function queryBook(url){
         const title = await queryTitle($);
         const author = await queryAuthor($);
         const page = await queryPages($);
+        const audioLink = await queryAudiobooklink($);
+        const paperbackLink = await queryPaperbackLink($);
         console.log(title);
         console.log(author);
         console.log(page);
+        console.log(audioLink);
+        console.log(paperbackLink);
     }
     catch(error){
         console.log("Error:", error);
@@ -59,6 +63,20 @@ async function queryPages($){
     } else { return 'Book Pages not found' }
 
 }
+
+async function queryAudiobooklink($){
+    const linkElement = $('li.swatchElement.unselected span.a-button-inner #a-autoid-2-announce');
+    if(linkElement.length > 0){
+        return 'Audiobook Link: https://www.amazon.com' + linkElement.attr('href');
+    } else { return 'Amazon link not found'}
+}
+
+async function queryPaperbackLink($){
+    const paperbackElement = $('li.swatchElement.unselected span.a-button-inner #a-autoid-4-announce');
+    if(paperbackElement.length > 0){
+        return 'Paperback Link: https://www.amazon.com' + linkElement.attr('href');
+    } else { return 'Paperback link not found'}
+} 
 
 queryBook(URL)
 
