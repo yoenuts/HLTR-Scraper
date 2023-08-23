@@ -31,7 +31,7 @@ async function queryBook(url){
         const title = await queryTitle($);
         const author = await queryAuthor($);
         const page = await queryPages($);
-        const audioLink = await queryAudiobooklink($);
+        const audioLink = await queryAudiobookLink($);
         const paperbackLink = await queryPaperbackLink($);
         console.log(title);
         console.log(author);
@@ -66,38 +66,33 @@ async function queryPages($){
 
 }
 
-async function queryAudiobooklink($) {
-    const audiobookElement = $('.top-level.unselected-row span.a-declarative a.title-text');
-    
+async function queryAudiobookLink($) {
+    const audiobookElement = $('.top-level.unselected-row a.title-text span.a-size-small.a-color-base:contains("Audible Audiobook, Unabridged")').closest('a');
     if (audiobookElement.length > 0) {
         const href = audiobookElement.attr("href");
         if (href) {
-          const aLink = "https://www.amazon.com" + href;
-          return aLink;
-        } 
-        else {
-            return 'href not found';
+            const audiobookLink = "Audiobook: https://www.amazon.com" + href;
+            return audiobookLink;
+        } else {
+            return 'Audiobook link not found';
         }
-    } 
-    else {
+    } else {
         return "Audiobook element not found";
     }
 }
 
-
 async function queryPaperbackLink($) {
-    const paperbackElement = $('.top-level.unselected-row a.title-text span.a-size-small.a-color-base.Paperback').closest('a');
-    
+    const paperbackElement = $('.top-level.unselected-row a.title-text span.a-size-small.a-color-base:contains("Paperback")').closest('a');
     if (paperbackElement.length > 0) {
         const href = paperbackElement.attr("href");
         if (href) {
-            const paperbackLink = "https://www.amazon.com" + href;
+            const paperbackLink = "Paperback: https://www.amazon.com" + href;
             return paperbackLink;
         } else {
             return 'Paperback link not found';
         }
     } else {
-        return 'Paperback element not found';
+        return "Paperback element not found";
     }
 }
 
