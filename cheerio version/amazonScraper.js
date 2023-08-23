@@ -33,11 +33,24 @@ async function queryBook(url){
         const page = await queryPages($);
         const audioLink = await queryAudiobookLink($);
         const paperbackLink = await queryPaperbackLink($);
+        
         console.log(title);
         console.log(author);
         console.log(page);
         console.log(audioLink);
         console.log(paperbackLink);
+        
+        if(audioLink !== 'Audiobook link element not found'){
+            const audiobookres = await axios.get(audioLink, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0'
+                }
+            });
+            const link$ = cheerio.load(audiobookres.data);
+            var audiobookDur = await queryAudiobookDur(link$);
+        }
+        
+        console.log(audiobookDur);
     }
     catch(error){
         console.log("Error:", error);
@@ -71,13 +84,22 @@ async function queryAudiobookLink($) {
     if (audiobookElement.length > 0) {
         const href = audiobookElement.attr("href");
         if (href) {
-            const audiobookLink = "Audiobook: https://www.amazon.com" + href;
+            const audiobookLink = "https://www.amazon.com" + href;
             return audiobookLink;
         } else {
-            return 'Audiobook link not found';
+            return 'link not found';
         }
     } else {
-        return "Audiobook element not found";
+        return "Audiobook link element not found";
+    }
+}
+
+async function queryAudiobookDur($){
+    const durElement = $('#rpi-attribute-audiobook_details-listening_length .a-section.a-spacing-none.a-text-center.rpi-attribute-value span');
+    if (durElement.length > 0) {
+        return durElement.text().trim();
+    } else {
+        return "Audiobook Dur not found";
     }
 }
 
@@ -86,7 +108,7 @@ async function queryPaperbackLink($) {
     if (paperbackElement.length > 0) {
         const href = paperbackElement.attr("href");
         if (href) {
-            const paperbackLink = "Paperback: https://www.amazon.com" + href;
+            const paperbackLink = "https://www.amazon.com" + href;
             return paperbackLink;
         } else {
             return 'Paperback link not found';
