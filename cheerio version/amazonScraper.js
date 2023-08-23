@@ -1,6 +1,7 @@
 const cheerio = require('cheerio');
 const axios = require('axios');
 
+//const URL = 'https://www.amazon.com/dp/B01M5IJM2U?tag=hltr-20';
 const URL = 'https://www.amazon.com/dp/B0036Z9U2A?tag=hltr-20';
 //query amazon link, gets number of pages, title, author, audiobook duration, kindle link, and paperback link.
 /*
@@ -25,6 +26,7 @@ async function queryBook(url){
         });
         //parse the response into html
         const $ = cheerio.load(response.data);
+        
         //if you dont wait it'll return a promise
         const title = await queryTitle($);
         const author = await queryAuthor($);
@@ -64,19 +66,41 @@ async function queryPages($){
 
 }
 
-async function queryAudiobooklink($){
-    const linkElement = $('li.swatchElement.unselected span.a-button-inner #a-autoid-2-announce');
-    if(linkElement.length > 0){
-        return 'Audiobook Link: https://www.amazon.com' + linkElement.attr('href');
-    } else { return 'Amazon link not found'}
+async function queryAudiobooklink($) {
+    const audiobookElement = $('.top-level.unselected-row span.a-declarative a.title-text');
+    
+    if (audiobookElement.length > 0) {
+        const href = audiobookElement.attr("href");
+        if (href) {
+          const aLink = "https://www.amazon.com" + href;
+          return aLink;
+        } 
+        else {
+            return 'href not found';
+        }
+    } 
+    else {
+        return "Audiobook element not found";
+    }
 }
 
-async function queryPaperbackLink($){
-    const paperbackElement = $('li.swatchElement.unselected span.a-button-inner #a-autoid-4-announce');
-    if(paperbackElement.length > 0){
-        return 'Paperback Link: https://www.amazon.com' + linkElement.attr('href');
-    } else { return 'Paperback link not found'}
-} 
+
+async function queryPaperbackLink($) {
+    const paperbackElement = $('.top-level.unselected-row a.title-text span.a-size-small.a-color-base.Paperback').closest('a');
+    
+    if (paperbackElement.length > 0) {
+        const href = paperbackElement.attr("href");
+        if (href) {
+            const paperbackLink = "https://www.amazon.com" + href;
+            return paperbackLink;
+        } else {
+            return 'Paperback link not found';
+        }
+    } else {
+        return 'Paperback element not found';
+    }
+}
+
 
 queryBook(URL)
 
