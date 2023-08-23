@@ -1,8 +1,9 @@
 const cheerio = require('cheerio');
 const axios = require('axios');
 
-//const URL = 'https://www.amazon.com/dp/B01M5IJM2U?tag=hltr-20';
-const URL = 'https://www.amazon.com/dp/B0036Z9U2A?tag=hltr-20';
+//these are kindle links
+const URL = 'https://www.amazon.com/dp/B01M5IJM2U?tag=hltr-20'; 
+//const URL = 'https://www.amazon.com/dp/B0036Z9U2A?tag=hltr-20';
 //query amazon link, gets number of pages, title, author, audiobook duration, kindle link, and paperback link.
 /*
 req(URL, (error, response, html) => {
@@ -34,12 +35,6 @@ async function queryBook(url){
         const audioLink = await queryAudiobookLink($);
         const paperbackLink = await queryPaperbackLink($);
         
-        console.log(title);
-        console.log(author);
-        console.log(page);
-        console.log(audioLink);
-        console.log(paperbackLink);
-        
         if(audioLink !== 'Audiobook link element not found'){
             const audiobookres = await axios.get(audioLink, {
                 headers: {
@@ -48,9 +43,21 @@ async function queryBook(url){
             });
             const link$ = cheerio.load(audiobookres.data);
             var audiobookDur = await queryAudiobookDur(link$);
+            var kindleLink = await queryKindleLink(link$);
+        }
+
+        const bookInfo = {
+            title,
+            author,
+            page,
+            audioLink,
+            paperbackLink,
+            audiobookDur,
+            kindleLink
         }
         
-        console.log(audiobookDur);
+        //the 2 adds indentation
+        console.log(JSON.stringify(bookInfo, null, 2));
     }
     catch(error){
         console.log("Error:", error);
@@ -104,7 +111,7 @@ async function queryAudiobookDur($){
 }
 
 async function queryPaperbackLink($) {
-    const paperbackElement = $('.top-level.unselected-row a.title-text span.a-size-small.a-color-base:contains("Paperback")').closest('a');
+    const paperbackElement = $('.top-level.unselected-row a.title-text span.a-size-small.a-color-base:contains("Kindle")').closest('a');
     if (paperbackElement.length > 0) {
         const href = paperbackElement.attr("href");
         if (href) {
@@ -118,6 +125,20 @@ async function queryPaperbackLink($) {
     }
 }
 
+async function queryKindleLink($) {
+    const kindleElement = $('.top-level.unselected-row a.title-text span.a-size-small.a-color-base:contains("Kindle")').closest('a');
+    if (kindleElement.length > 0) {
+        const href = kindleElement.attr("href");
+        if (href) {
+            const kindle = "https://www.amazon.com" + href;
+            return kindle;
+        } else {
+            return 'kindle link not found';
+        }
+    } else {
+        return "kindle element not found";
+    }
+}
 
 queryBook(URL)
 
