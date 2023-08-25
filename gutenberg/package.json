@@ -1,0 +1,25 @@
+{
+  "name": "gutenberg",
+  "version": "1.0.0",
+  "description": "A scraper to download book pdfs, wordCount and passages",
+  "main": "gutenbergScrape.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node gutenbergScrape.js"
+  },
+  "keywords": [
+    "nodejs",
+    "scraper",
+    "cheerio",
+    "axios",
+    "fs",
+    "hltr"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "cheerio": "^1.0.0-rc.12",
+    "fs": "^0.0.1-security"
+  }
+}
