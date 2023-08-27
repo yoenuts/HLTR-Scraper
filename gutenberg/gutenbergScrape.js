@@ -23,19 +23,23 @@ async function downloadHTML(url, filePath){
 
 }
 
-async function queryBook(eFileName, filePath, epubFolder, epubFilePath){
+async function queryBook(filePath, epubFilePath){
     try{
         const html = fs.readFileSync(filePath, 'utf-8');
         const $ = cheerio.load(html);
-    
+        
+        const bookTitle = await getTitle($);
         const epubLink = await getDownloadLink($);
         //pass the link, name of the epub file and where to save it
-        await downloadLink(epubLink, epubFolder, eFileName);
+        await downloadLink(epubLink, epubFilePath);
         const wordCount = await getWordCount(epubFilePath);
+        const passage = await getPassage(epubFilePath);
 
         const bookInfo = {
+            bookTitle,
             epubLink,
-            wordCount
+            wordCount,
+            passage
         }
 
         console.log(JSON.stringify(bookInfo, null, 2));
@@ -65,8 +69,8 @@ async function getDownloadLink($){
 }
 
 
-async function downloadLink(url, filePath, fileName){
-    const output = path.join(filePath, fileName);
+async function downloadLink(url, filePath){
+    const output = path.join(filePath);
     try{
 
         const response = await axios({
@@ -88,8 +92,17 @@ async function downloadLink(url, filePath, fileName){
     }
 }                                                                                                                              
 
-async function getPassage(){
+async function getPassage(epubFilePath){
+    try {
+        const textArray = await EPub.getText(epubFilePath);
+        const ChapterText = textArray[2];
+        const sentences = thirdChapterText.split('.');
+        const excerpt = sentences.slice(0, 5).join('. ');
     
+        return excerpt;
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
 async function getWordCount(FilePath){
@@ -124,10 +137,10 @@ if(!fs.existsSync(epubfolderPath)){
 };
 
 const htmlFilePath = path.join(htmlfolderPath, htmlFileName);
-epubFilePath = path.join(epubfolderPath, epubFileName);
+const epubFilePath = path.join(epubfolderPath, epubFileName);
 
 downloadHTML(URL, htmlFilePath).then(() => {
-    queryBook(epubFileName, htmlFilePath, epubfolderPath, epubFilePath);
+    queryBook(htmlFilePath, epubFilePath);
 }).catch(error => {
     throw error;
 });
