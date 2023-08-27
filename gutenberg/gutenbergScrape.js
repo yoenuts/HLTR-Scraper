@@ -3,12 +3,14 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const EPub = require('epub-wordcount');
+
 
 const URL = 'https://gutenberg.org/ebooks/2701';
 
 //download complete books, get their word counts, and also get example passages from the books
 
-//project gutenberg bans scraping so I downloaded HTML, then worked with that 
+//project gutenberg bans scraping so I downloaded HTML 
 async function downloadHTML(url, filePath){
     try{
         response = await axios.get(url);
@@ -21,26 +23,27 @@ async function downloadHTML(url, filePath){
 
 }
 
-async function queryBook(filePath, epubfilePath){
+async function queryBook(eFileName, filePath, epubFolder, epubFilePath){
     try{
         const html = fs.readFileSync(filePath, 'utf-8');
         const $ = cheerio.load(html);
     
-    
-        const title = await getTitle($);
         const epubLink = await getDownloadLink($);
-        await downloadLink(title, epubLink, epubfilePath);
-        const passage = await getPassage();
+        //pass the link, name of the epub file and where to save it
+        await downloadLink(epubLink, epubFolder, eFileName);
+        const wordCount = await getWordCount(epubFilePath);
+
         const bookInfo = {
-            title,
-            epubLink
+            epubLink,
+            wordCount
         }
 
         console.log(JSON.stringify(bookInfo, null, 2));
     
     }
     catch(error){
-        throw 'error reading html file';
+        console.error("Error:", error);
+        throw error;
     }
 }
 
@@ -62,9 +65,8 @@ async function getDownloadLink($){
 }
 
 
-async function downloadLink(title, url, filePath){
-    const epubName = title + '.epub';
-    const output = path.join(filePath, epubName);
+async function downloadLink(url, filePath, fileName){
+    const output = path.join(filePath, fileName);
     try{
 
         const response = await axios({
@@ -84,16 +86,22 @@ async function downloadLink(title, url, filePath){
     catch(error){
         console.log('Error:',error);
     }
-}
+}                                                                                                                              
 
 async function getPassage(){
-
-}
-
-async function getWordCount(){
     
 }
 
+async function getWordCount(FilePath){
+    try{
+        const wordCount = await EPub.countWords(FilePath);
+        return wordCount;
+    }
+    catch(error){
+        console.log("Error counting: ", error);
+        throw error;
+    }
+}
 
 //file name
 const htmlFileName = URL.split('/ebooks/')[1] + '.html';
@@ -101,10 +109,10 @@ const epubFileName = URL.split('/ebooks/')[1] + '.epub';
 //file path. Folder to store html files was in my computer's Documents
 const documentsPath = path.join(os.homedir(), 'Documents');
 const htmlfolderPath = path.join(documentsPath, 'gutenberg-book-html');
-//store epubs in a filder within gutenberg-book-html
+//store epubs in a folder within gutenberg-book-html
 const epubfolderPath = path.join(htmlfolderPath, 'gutenberg-book-epubs');
 
-//check if gutenberg-book-html and gutenberg-book-epubs folder exist in the computer directory. create one if it doesnt
+//check if gutenberg-book-html and gutenberg-book-ep   ubs folder exist in the computer directory. create one if it doesnt
 if (!fs.existsSync(htmlfolderPath)) {
     // Create the folder if it doesn't exist
     fs.mkdirSync(htmlfolderPath);
@@ -116,6 +124,10 @@ if(!fs.existsSync(epubfolderPath)){
 };
 
 const htmlFilePath = path.join(htmlfolderPath, htmlFileName);
+epubFilePath = path.join(epubfolderPath, epubFileName);
+
 downloadHTML(URL, htmlFilePath).then(() => {
-    queryBook(htmlFilePath, epubfolderPath);
+    queryBook(epubFileName, htmlFilePath, epubfolderPath, epubFilePath);
+}).catch(error => {
+    throw error;
 });
