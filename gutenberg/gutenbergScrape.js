@@ -6,7 +6,7 @@ const os = require('os');
 const EPub = require('epub-wordcount');
 
 
-const URL = 'https://gutenberg.org/ebooks/2701';
+const URL = 'https://www.gutenberg.org/ebooks/2641';
 
 //download complete books, get their word counts, and also get example passages from the books
 
@@ -38,6 +38,7 @@ async function queryBook(filePath, epubFilePath){
         const bookInfo = {
             bookTitle,
             epubLink,
+            epubFilePath,
             wordCount,
             passage
         }
@@ -95,8 +96,8 @@ async function downloadLink(url, filePath){
 async function getPassage(epubFilePath){
     try {
         const textArray = await EPub.getText(epubFilePath);
-        const ChapterText = textArray[2];
-        const sentences = thirdChapterText.split('.');
+        const ChapterText = textArray[6];
+        const sentences = ChapterText.split('.');
         const excerpt = sentences.slice(0, 5).join('. ');
     
         return excerpt;
